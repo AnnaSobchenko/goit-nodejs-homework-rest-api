@@ -4,6 +4,7 @@ const {
   catchRegErrors,
   catchLogErrors,
   catchErrors,
+  catchVerifyErrors,
 } = require("../../middlewares/catch-errors");
 const { postAuthValidation } = require("../../middlewares/validationSchema");
 const router = express.Router();
@@ -14,6 +15,8 @@ const {
   currentUser,
   logoutUser,
   avatarsUpdate,
+  verificationUser,
+  verificationSecondUser,
 } = require("../../models/users");
 
 const multer = require("multer");
@@ -86,6 +89,27 @@ router.patch(
   catchErrors(async (req, res, next) => {
     const user = await avatarsUpdate(req.user.token, req.file);
     res.status(200).send(user);
+  })
+);
+
+router.get(
+  "/verify/:verificationToken",
+  catchErrors(async (req, res, next) => {
+    const user = await verificationUser(req.params.verificationToken);
+    res.status(200).json({ message: "Verification successful", user });
+  })
+);
+
+router.post(
+  "/verify/",
+  catchVerifyErrors(async (req, res, next) => {
+    const result =await verificationSecondUser(req.body)
+
+    if (result) {
+      res.status(200).json({ message: "Verification email send" });
+    } else {
+      res.status(400).json({ message: "Verification has already been passed" });
+    }
   })
 );
 
